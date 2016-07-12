@@ -1,0 +1,14 @@
+# binary / compiled objects
+*.o
+*.bin
+*.hex
+*.elf
+*.d
+
+# Matlab figures
+*.fig
+*.eps
+*.png
+
+# Trash files
+
