@@ -34,8 +34,23 @@ char *strcpy(char *dst, char *src);
 uint8_t *strcat(uint8_t *dest, const uint8_t *src);
 
 //added by Hao
+typedef struct tagoutput
+{ 
+uint8_t type;
+uint32_t time;
+uint16_t val;
+uint8_t checksum;
+} output;
+output out[10000];
+output out_tem;
+uint8_t tem[8];
+uint8_t *pack_push(uint8_t *ptr);
+output pack_pop();
+void load(output data, uint8_t* c);
 uint8_t pk_ptr[14]="";
 uint8_t i=0;
+uint8_t flag=0;
+
 //
 
 int main(int argc, char* argv[])
@@ -57,13 +72,19 @@ int main(int argc, char* argv[])
 		        if (ri>0)
                          {
                           strcmp(pk_ptr,strcat(pk_ptr,buf));
-                          if (strlen(pk_ptr)>=9)
+                          if (strlen(pk_ptr)>=10)
                           {
-                             if (pk_ptr[0]=='S' && pk_ptr[8]=='E')
-                              uart_write(myUSART,pk_ptr,9);
-                             else uart_write(myUSART,"ErrorPack",9);
-                               for (i=0;i<5;i++)
-                                pk_ptr[i]=pk_ptr[i+9];
+                             if (pk_ptr[0]=='S' && pk_ptr[9]=='E')
+                               {pack_push(pk_ptr);
+                                out_tem = pack_pop();
+                                load(out_tem,tem);
+                                uart_write(myUSART,"S",1);
+                                uart_write(myUSART,tem,8);  
+                                uart_write(myUSART,"E",1);
+                               }
+                             else uart_write(myUSART,"ErrorPack!",10);
+                               for (i=0;i<4;i++)
+                                pk_ptr[i]=pk_ptr[i+10];
                           }
                          }
     
@@ -98,7 +119,8 @@ int strcmp(const char* s1, const char* s2)
     return *(const unsigned char*)s1-*(const unsigned char*)s2;
 }
 
-uint8_t* strcat(uint8_t* dest,const uint8_t* src){
+uint8_t* strcat(uint8_t* dest,const uint8_t* src)
+{
     if(src==""||dest=="") return dest;
     char* temp=dest;
     int i=0;
@@ -110,6 +132,38 @@ uint8_t* strcat(uint8_t* dest,const uint8_t* src){
     return temp;
 }
 
+
+uint8_t *pack_push(uint8_t *ptr)
+{  
+  out[++flag].type=ptr[1];
+  out[flag].time=*((uint32_t*)(ptr+2));
+  out[flag].val=*((uint16_t*)(ptr+6));
+  out[flag].checksum=*(ptr+8);
+  return "PackStored";
+}
+
+output pack_pop()
+{  
+   output r;
+   r.type=out[flag].type;
+   r.time=out[flag].time;
+   r.val=out[flag].val;
+   r.checksum=out[flag--].checksum;
+  return r;
+}
+
+void load(output data, uint8_t *c)
+{ 
+ c[0]=data.type;
+ c[1]=*((uint8_t*)(&data.time));
+ c[2]=*(((uint8_t*)(&data.time))+1);
+ c[3]=*(((uint8_t*)(&data.time))+2);
+ c[4]=*(((uint8_t*)(&data.time))+3);
+ c[5]=*(((uint8_t*)(&data.val))+0);
+ c[6]=*(((uint8_t*)(&data.val))+1);
+ c[7]=*((uint8_t*)(&data.checksum));
+ 
+}
 
 #ifdef USE_FULL_ASSERT
 void assert_failed(uint8_t* file, uint32_t line)
