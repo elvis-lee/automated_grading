@@ -24,7 +24,7 @@ def com1():
   global success
   global fail 
   global data
-  for i in range(0,100):
+  for i in range(0,1000):
    print i
    data = 'S'+id_generator(8,)+'E'
    ser.write(data)    

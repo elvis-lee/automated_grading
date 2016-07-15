@@ -1,6 +1,7 @@
 
 #include "uart.h"
 #include <stm32f4xx.h>
+#include <stm32f4_discovery.h>
 
 
 // please redefine HSE_VALUE and PLL_M following this link:
@@ -51,10 +52,15 @@ uint8_t pk_ptr[14]="";
 uint8_t i=0;
 uint8_t flag=0;
 
+static void pins_setup(void);
+extern __IO uint32_t TimingDelay;
 //
 
 int main(int argc, char* argv[])
 {
+        //Systick configuration by Hao
+         
+         pins_setup();
 	// At this stage the system clock should have already been configured
 	// at high speed.
 	//trace_printf("System clock: %uHz\n", SystemCoreClock);
@@ -64,12 +70,18 @@ int main(int argc, char* argv[])
 	cmdi = 0;
 
 	// prompt
-	uart_write(myUSART, "elvis is here ", strlen("elvis is here "));
+	uart_write(myUSART, "elvis is h ", strlen("elvis is h"));
+        SysTick_Config(SystemCoreClock/100000); 
 
+ 
+    
 	// Infinite loop
 	while (1)
-	{		ri = uart_read(myUSART, buf, nbyte);
-		        if (ri>0)
+	{	    
+                    
+                  	ri = uart_read(myUSART, buf, nbyte);
+		         if (ri>0)
+                          
                          {
                           strcmp(pk_ptr,strcat(pk_ptr,buf));
                           if (strlen(pk_ptr)>=10)
@@ -81,16 +93,20 @@ int main(int argc, char* argv[])
                                 uart_write(myUSART,"S",1);
                                 uart_write(myUSART,tem,8);  
                                 uart_write(myUSART,"E",1);
-                               }
+                                }
                              else uart_write(myUSART,"ErrorPack!",10);
                                for (i=0;i<4;i++)
                                 pk_ptr[i]=pk_ptr[i+10];
                           }
                          }
+   
+                      if (TimingDelay==0)
+    			 GPIO_SetBits(GPIOD, GPIO_Pin_11);
+   			else
+    			 GPIO_ResetBits(GPIOD, GPIO_Pin_11);     
+        }
     
-                       
-	}
-	uart_close(myUSART);
+	
         
 }
 
@@ -163,6 +179,18 @@ void load(output data, uint8_t *c)
  c[6]=*(((uint8_t*)(&data.val))+1);
  c[7]=*((uint8_t*)(&data.checksum));
  
+}
+
+static void pins_setup(void)
+{
+    GPIO_InitTypeDef GPIO_InitStructure;
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+    GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_11;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+    GPIO_Init(GPIOD, &GPIO_InitStructure);
 }
 
 #ifdef USE_FULL_ASSERT

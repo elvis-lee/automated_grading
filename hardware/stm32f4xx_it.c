@@ -29,8 +29,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
-#include "main.h"
+//#include "main.h"
 
+
+__IO uint32_t TimingDelay=0;
 /** @addtogroup Template_Project
   * @{
   */
@@ -139,9 +141,18 @@ void PendSV_Handler(void)
   * @param  None
   * @retval None
   */
+
+
 void SysTick_Handler(void)
-{
-  TimingDelay_Decrement();
+{ 
+ if (TimingDelay==0)
+   {
+    TimingDelay=1;
+   }
+   else 
+   {
+    TimingDelay=0;
+   }
 }
 
 /******************************************************************************/

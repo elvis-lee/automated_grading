@@ -2,7 +2,7 @@
 PROJ_NAME=UART1
 
 # object files
-OBJS=  $(STARTUP) main.o  stm32f4xx_gpio.o stm32f4xx_rcc.o stm32f4xx_usart.o misc.o uart.o 
+OBJS=  $(STARTUP) main.o  stm32f4xx_gpio.o stm32f4xx_rcc.o stm32f4xx_usart.o misc.o uart.o stm32f4xx_it.o
 
 
 #############################
@@ -37,7 +37,8 @@ OBJCOPY=$(TOOLROOT)/arm-none-eabi-objcopy
 DEVICE=$(LIBROOT)/Libraries/CMSIS/ST/STM32F4xx/Include/
 CORE=$(LIBROOT)/Libraries/CMSIS/Include/
 PERIPH=$(LIBROOT)/Libraries/STM32F4xx_StdPeriph_Driver
-
+Utility=$(LIBROOT)/Utilities/STM32F4-Discovery 
+                  
 # Search path for standard files
 vpath %.c $(TEMPLATEROOT)
 
@@ -45,6 +46,7 @@ vpath %.c $(TEMPLATEROOT)
 vpath %.c $(CORE)
 vpath %.c $(PERIPH)/src
 vpath %.c $(DEVICE)
+
 
 #  Processor specific
 PTYPE = STM32F40_41xxx
@@ -64,7 +66,7 @@ LDFLAGS += -T$(LDSCRIPT) -mthumb -mcpu=cortex-m4 #-mthumb-interwork
 CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 #-mthumb-interwork
 #CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
-CFLAGS+= -I$(TEMPLATEROOT) -I$(DEVICE) -I$(CORE) -I$(PERIPH)/inc
+CFLAGS+= -I$(TEMPLATEROOT) -I$(DEVICE) -I$(CORE) -I$(PERIPH)/inc -I$(Utility)
 CFLAGS+= -D$(PTYPE) -DUSE_STDPERIPH_DRIVER $(FULLASSERT)
 
 
