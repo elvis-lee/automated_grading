@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     pins_setup();
 	uart_open(myUSART,1000000,0);
 
-    SysTick_Config(SystemCoreClock/1000); 
+    SysTick_Config(SystemCoreClock/50000); 
     NVIC_SetPriority(SysTick_IRQn,0);
     SysTick->CTRL  =  SysTick->CTRL & (~1UL);
    // SysTick->CTRL  =  SysTick->CTRL | 1UL;  
@@ -78,15 +78,14 @@ int main(int argc, char* argv[])
            //=====enable systick after receiving all pack=====
 
              if (pack_rec_all)
-                {   
+                {   pack_rec_all = 0;
                     SysTick->CTRL  =  SysTick->CTRL | 1UL;//enable systick
                     GPIO_SetBits(GPIOD,LED5_PIN); 
-                    pack_rec_all = 0;
-                      /*if (!flag)  
+                   
+                      if (!flag)  
                       {  SysTick->CTRL = 0;//disable systick
-                         pack_rec_all = 0;
                          GPIO_ResetBits(GPIOD,LED5_PIN);
-                      }*/
+                      }
   
                 }
 		  	 

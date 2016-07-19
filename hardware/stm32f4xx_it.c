@@ -162,7 +162,7 @@ void SysTick_Handler(void)
   //test if enter here
   GPIO_SetBits(GPIOD,LED3_PIN);
   
-  /*if ((data_array[flag].time) == TimingDelay) 
+  if ((data_array[flag].time) == TimingDelay) 
   { 
     data = data_array[flag];
     pins_val = data.val;
@@ -176,7 +176,7 @@ void SysTick_Handler(void)
     }
 
     flag--;
-  }*/
+  }
 
 
 }
