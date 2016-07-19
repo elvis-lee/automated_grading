@@ -1,14 +1,46 @@
-# binary / compiled objects
+# OS junk files
+[Tt]humbs.db
+*.DS_Store
+*~
+
+# Data files
+Data/*
+data/*
+data
+
+# Compiled objects
 *.o
-*.bin
+*.pyc
+*.exe
 *.hex
 *.elf
-*.d
+*.bin
 
-# Matlab figures
-*.fig
+# Swapfiles
+*.swp
+
+# Latex files
+*.aux
+*.lof
+*.log
+*.lot
+*.gz
+*.toc
+*.log
+
+# image and figure files
 *.eps
 *.png
+*.fig
+*.jpg
+*.jpeg
+*.gif
+*.pdf
 
-# Trash files
+# video files
+*.avi
+*.mov
+*.mp4
 
+# matlab storage files
+*.mat
