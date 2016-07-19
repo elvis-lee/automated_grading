@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 
 		ri = pack_avail(&UART1_RXq);
 		     if (ri >= nbyte) 
-			    {   SysTick->CTRL = 1;//enable systick
+			    {   
 			       ri = Dequeue(&UART1_RXq,buf,nbyte);
 			        for (tem_buf_ptr = buf; tem_buf_ptr - buf < ri ;tem_buf_ptr = tem_buf_ptr + sizeof(uart_frame_t))
 			         {	
