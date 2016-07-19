@@ -1,48 +1,26 @@
 #ifndef _UART_H
 #define _UART_H
 
-
 #include <stm32f4xx_usart.h>
 
-#define QUEUE_SIZE 64
-# define HIGH_WATER ( QUEUE_SIZE - 6)
 
-//#define HWFLOWCTRL
+#define QUEUE_SIZE 600
+#define HIGH_WATER ( QUEUE_SIZE - 6)
 
-uint8_t _getchar(void);
-uint8_t _putchar(const uint8_t c);
+struct Queue {
+  uint16_t pRD, pWR;
+  uint8_t  q[QUEUE_SIZE];
+};
 
-
-int uart_open(uint8_t uart, uint32_t baud, uint32_t flags);
-int uart_close(uint8_t uart);
-uint16_t uart_read (uint8_t uart, uint8_t *buf, uint16_t nbyte);
+struct Queue UART1_TXq, UART1_RXq;
+int Dequeue(struct Queue *q, uint8_t *data, uint16_t len);
+int pack_avail(struct Queue *q);
+int Enqueue(struct Queue *q, const uint8_t *data, uint16_t len);
+int QueueFull(struct Queue *q);
+int QueueEmpty(struct Queue *q);
+void InitQueue(struct Queue *q);
 uint16_t uart_write(uint8_t uart, const uint8_t *buf, uint16_t nbyte);
+int uart_open(uint8_t uart, uint32_t baud, uint32_t flags);
 
 #endif
 
-
-
-
-
-/*
-// uart.h
-
-
-#ifndef UART_H_
-#define UART_H_
-
-#include <stm32f10x.h>
-
-
-int uart_open ( USART_TypeDef * USARTx , uint32_t baud , uint32_t flags);
-int uart_close ( USART_TypeDef * USARTx );
-int uart_putc (int c, USART_TypeDef * USARTx );
-int uart_getc ( USART_TypeDef * USARTx );
-
-int uart_puts (char* string  , USART_TypeDef * USARTx );
-char* uart_gets (USART_TypeDef * USARTx );
-
-
-
-#endif
-*/

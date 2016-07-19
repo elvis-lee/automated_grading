@@ -4,6 +4,7 @@ from timeit import Timer
 import timeit
 import string
 import random
+import time
 
 BAUDRATE=1000000
 
@@ -21,10 +22,14 @@ ser.timeout=None
 ser.writeTimeout=None
 ser.open()  
 def com1():   
- for i in range(1,10):      #Sending out 10MB in total
-  data = id_generator(1048576)  #1048576Bytes=1MB
+ for i in range(1,11001):      #Sending out 10MB in total
+  data = id_generator(10,) 
+  print data
   ser.write(data)
-  print "Time=%d Sent=%dMB" %(i,i)     
+  print "Time=%d Sent=%d packets" %(i,i) 
+ received = ser.read(8)
+ print received 
+    
  return
 
 
@@ -33,5 +38,5 @@ t=Timer(com1,setup="")
 t1=t.timeit(1)
 print "Total Time=%fs" %(t1) 
 print "Baud Rate=%d" %(BAUDRATE)  
-print "Throughout=%fKB/s" %(10240/t1)
+
 ser.close()

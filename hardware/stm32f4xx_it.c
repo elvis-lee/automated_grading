@@ -145,14 +145,11 @@ void PendSV_Handler(void)
 
 void SysTick_Handler(void)
 { 
+ TimingDelay=!TimingDelay;
  if (TimingDelay==0)
-   {
-    TimingDelay=1;
-   }
-   else 
-   {
-    TimingDelay=0;
-   }
+     GPIO_SetBits(GPIOD,GPIO_Pin_11);
+   else
+     GPIO_ResetBits(GPIOD,GPIO_Pin_11);   
 }
 
 /******************************************************************************/

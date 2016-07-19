@@ -1,118 +1,100 @@
-
+#include "main.h"
 #include "uart.h"
-#include <stm32f4xx.h>
-#include <stm32f4_discovery.h>
-
-
 // please redefine HSE_VALUE and PLL_M following this link:
 //http://stm32f4-discovery.com/2015/01/properly-set-clock-speed-stm32f4xx-devices/
 
-// ----- main() ---------------------------------------------------------------
-
-// Sample pragmas to cope with warnings. Please note the related line at
-// the end of this function, used to pop the compiler diagnostics status.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wmissing-declarations"
-#pragma GCC diagnostic ignored "-Wreturn-type"
-
-//#define myUSART USART1
 #define myUSART 1
+#define ALL_PINS (GPIO_Pin_11 | LED4_PIN | LED5_PIN | LED3_PIN | LED6_PIN) // all pins
 
+//=====define packet byte size=====
+#define N 10
 
+//=====buffer=====
 uint8_t buf[QUEUE_SIZE];
-uint8_t nbyte = 32; //size_t
+uint8_t *tem_buf_ptr;
+//=====maximum bytes read each time=====
+uint16_t nbyte = 100; //size_t
+//=====data array=====
+ uart_data_t data_array[12000];
+//=====flag for data array=====
+uint16_t flag=0; 
+//=====push and pop data=====
+void pack_push(uint8_t *addr);
+uart_data_t* pack_pop();
+//=====counter slows down buf read=====
+uint8_t cnt1 = 100;
 
-uint8_t cmd[16];
-uint8_t cmdi; //size_t
+//=====temporary test variable=====
+uint8_t test1 = 0;
 
-uint8_t cmd_feedback[32];
-
-// avoid newlib
-int strlen(char *s);
-int strcmp(const char* s1, const char* s2);
-char *strcpy(char *dst, char *src);
-uint8_t *strcat(uint8_t *dest, const uint8_t *src);
-
-//added by Hao
-typedef struct tagoutput
-{ 
-uint8_t type;
-uint32_t time;
-uint16_t val;
-uint8_t checksum;
-} output;
-output out[10000];
-output out_tem;
-uint8_t tem[8];
-uint8_t *pack_push(uint8_t *ptr);
-output pack_pop();
-void load(output data, uint8_t* c);
-uint8_t pk_ptr[14]="";
-uint8_t i=0;
-uint8_t flag=0;
-
-static void pins_setup(void);
-extern __IO uint32_t TimingDelay;
-//
 
 int main(int argc, char* argv[])
-{
-        //Systick configuration by Hao
-         
-         pins_setup();
-	// At this stage the system clock should have already been configured
-	// at high speed.
-	//trace_printf("System clock: %uHz\n", SystemCoreClock);
-
+{  
+    uint32_t ri;
+ 	uint32_t i;
+    
+    pins_setup();
 	uart_open(myUSART,1000000,0);
-	uint8_t ri;
-	cmdi = 0;
-
-	// prompt
-	uart_write(myUSART, "elvis is h ", strlen("elvis is h"));
-        SysTick_Config(SystemCoreClock/100000); 
-
- 
+    SysTick_Config(SystemCoreClock/100000); 
+    NVIC_SetPriority(SysTick_IRQn,0);
+   // NVIC_SetPriority(USART1_IRQn,1);
     
 	// Infinite loop
-	while (1)
-	{	    
-                    
-                  	ri = uart_read(myUSART, buf, nbyte);
-		         if (ri>0)
-                          
-                         {
-                          strcmp(pk_ptr,strcat(pk_ptr,buf));
-                          if (strlen(pk_ptr)>=10)
-                          {
-                             if (pk_ptr[0]=='S' && pk_ptr[9]=='E')
-                               {pack_push(pk_ptr);
-                                out_tem = pack_pop();
-                                load(out_tem,tem);
-                                uart_write(myUSART,"S",1);
-                                uart_write(myUSART,tem,8);  
-                                uart_write(myUSART,"E",1);
-                                }
-                             else uart_write(myUSART,"ErrorPack!",10);
-                               for (i=0;i<4;i++)
-                                pk_ptr[i]=pk_ptr[i+10];
-                          }
-                         }
-   
-                      if (TimingDelay==0)
-    			 GPIO_SetBits(GPIOD, GPIO_Pin_11);
-   			else
-    			 GPIO_ResetBits(GPIOD, GPIO_Pin_11);     
-        }
-    
+	while (1)	
+	{  
+	  if (cnt1 < 100) //DONT MAKE IT LARGER THAN 200
+	   cnt1++;
+	  else
+	  { cnt1 = 0;
+       
+       /*=====check priority setting! make sure Systick has higher priority=====
+	   if (NVIC_GetPriority( USART1_IRQn ) > NVIC_GetPriority( SysTick_IRQn )) GPIO_SetBits(GPIOD,LED4_PIN);  */
+
+
+		ri = pack_avail(&UART1_RXq);
+		if (ri >= nbyte) 
+			{  
+			  ri = Dequeue(&UART1_RXq,buf,nbyte);
+			
+			  for (tem_buf_ptr = buf; tem_buf_ptr - buf < ri ;tem_buf_ptr = tem_buf_ptr + sizeof(uart_frame_t))
+			  {	
+			  	pack_push(tem_buf_ptr);
+			  }
+			  ri = 0;
+			}
+
+           //=====checking data_array overflow, which means too many packets received=====
+		     if (flag >= 11000)  
+		     	 {
+		     	  GPIO_SetBits(GPIOD,LED4_PIN);  
+		     	  Enqueue(&UART1_TXq,pack_pop(),8);
+		     	 }
+		  	 else  	
+		  		  GPIO_ResetBits(GPIOD,LED4_PIN);
+		}
+	}
+}	
+
+//=====packet push=====
+void pack_push(uint8_t *addr)
+{   uart_frame_t *frame;
+	flag++;
+	frame = ((uart_frame_t*)addr);
+	data_array[flag] = (*frame).data;
 	
-        
+}
+
+//=====packet pop=====
+uart_data_t* pack_pop()
+{
+	uart_data_t* d;
+    d = &(data_array[flag]);
+	flag--;
+	return d;
 }
 
 
-
-
+//=====string handle functions=====
 int strlen(char *s)
 {
     char *p = s;
@@ -148,50 +130,22 @@ uint8_t* strcat(uint8_t* dest,const uint8_t* src)
     return temp;
 }
 
-
-uint8_t *pack_push(uint8_t *ptr)
-{  
-  out[++flag].type=ptr[1];
-  out[flag].time=*((uint32_t*)(ptr+2));
-  out[flag].val=*((uint16_t*)(ptr+6));
-  out[flag].checksum=*(ptr+8);
-  return "PackStored";
-}
-
-output pack_pop()
-{  
-   output r;
-   r.type=out[flag].type;
-   r.time=out[flag].time;
-   r.val=out[flag].val;
-   r.checksum=out[flag--].checksum;
-  return r;
-}
-
-void load(output data, uint8_t *c)
-{ 
- c[0]=data.type;
- c[1]=*((uint8_t*)(&data.time));
- c[2]=*(((uint8_t*)(&data.time))+1);
- c[3]=*(((uint8_t*)(&data.time))+2);
- c[4]=*(((uint8_t*)(&data.time))+3);
- c[5]=*(((uint8_t*)(&data.val))+0);
- c[6]=*(((uint8_t*)(&data.val))+1);
- c[7]=*((uint8_t*)(&data.checksum));
- 
-}
+//=====initialize pins=====
 
 static void pins_setup(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-    GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_11;
+    GPIO_InitStructure.GPIO_Pin   = ALL_PINS;
     GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
     GPIO_Init(GPIOD, &GPIO_InitStructure);
 }
+
+
+
 
 #ifdef USE_FULL_ASSERT
 void assert_failed(uint8_t* file, uint32_t line)
@@ -201,9 +155,3 @@ void assert_failed(uint8_t* file, uint32_t line)
     while (1);
 }
 #endif
-
-
-
-#pragma GCC diagnostic pop
-
-// ----------------------------------------------------------------------------
