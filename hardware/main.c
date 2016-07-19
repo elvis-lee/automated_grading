@@ -4,28 +4,31 @@
 //http://stm32f4-discovery.com/2015/01/properly-set-clock-speed-stm32f4xx-devices/
 
 #define myUSART 1
-#define ALL_PINS (GPIO_Pin_11 | LED4_PIN | LED5_PIN | LED3_PIN | LED6_PIN) // all pins
 
 //=====define packet byte size=====
 #define N 10
 
+//=====external variables=====
+extern __IO uint32_t TimingDelay;
 //=====buffer=====
 uint8_t buf[QUEUE_SIZE];
 uint8_t *tem_buf_ptr;
 //=====maximum bytes read each time=====
 uint16_t nbyte = 100; //size_t
+//=====PINs setting=====
+uint16_t pins[] = {GPIO_Pin_0,GPIO_Pin_1, GPIO_Pin_2,GPIO_Pin_3,GPIO_Pin_4,GPIO_Pin_5,GPIO_Pin_6,GPIO_Pin_7,GPIO_Pin_8,GPIO_Pin_9,GPIO_Pin_10,GPIO_Pin_11,GPIO_Pin_12,GPIO_Pin_13,GPIO_Pin_14,GPIO_Pin_15};
 //=====data array=====
- uart_data_t data_array[12000];
+uart_data_t data_array[12000];
 //=====flag for data array=====
-uint16_t flag=0; 
+__IO uint16_t flag= 0 ; 
 //=====push and pop data=====
 void pack_push(uint8_t *addr);
 uart_data_t* pack_pop();
 //=====counter slows down buf read=====
 uint8_t cnt1 = 100;
-
 //=====temporary test variable=====
 uint8_t test1 = 0;
+uint8_t pack_rec_all = 0;
 
 
 int main(int argc, char* argv[])
@@ -35,10 +38,12 @@ int main(int argc, char* argv[])
     
     pins_setup();
 	uart_open(myUSART,1000000,0);
-    SysTick_Config(SystemCoreClock/100000); 
+
+    SysTick_Config(SystemCoreClock/1000); 
     NVIC_SetPriority(SysTick_IRQn,0);
-   // NVIC_SetPriority(USART1_IRQn,1);
-    
+    SysTick->CTRL  =  SysTick->CTRL & (~1UL);
+   // SysTick->CTRL  =  SysTick->CTRL | 1UL;  
+
 	// Infinite loop
 	while (1)	
 	{  
@@ -52,25 +57,39 @@ int main(int argc, char* argv[])
 
 
 		ri = pack_avail(&UART1_RXq);
-		if (ri >= nbyte) 
-			{  
-			  ri = Dequeue(&UART1_RXq,buf,nbyte);
-			
-			  for (tem_buf_ptr = buf; tem_buf_ptr - buf < ri ;tem_buf_ptr = tem_buf_ptr + sizeof(uart_frame_t))
-			  {	
-			  	pack_push(tem_buf_ptr);
-			  }
-			  ri = 0;
-			}
+		     if (ri >= nbyte) 
+			    {   SysTick->CTRL = 1;//enable systick
+			       ri = Dequeue(&UART1_RXq,buf,nbyte);
+			        for (tem_buf_ptr = buf; tem_buf_ptr - buf < ri ;tem_buf_ptr = tem_buf_ptr + sizeof(uart_frame_t))
+			         {	
+			   	       pack_push(tem_buf_ptr);
+			         }
+			       ri = 0;
+			    }
 
-           //=====checking data_array overflow, which means too many packets received=====
+           //=====check if rec all pack=====
 		     if (flag >= 11000)  
-		     	 {
-		     	  GPIO_SetBits(GPIOD,LED4_PIN);  
-		     	  Enqueue(&UART1_TXq,pack_pop(),8);
-		     	 }
-		  	 else  	
-		  		  GPIO_ResetBits(GPIOD,LED4_PIN);
+		     	{
+                    pack_rec_all = 1;
+		     	    GPIO_SetBits(GPIOD,LED4_PIN); 
+                    //echo back the 11000 packet 
+		     	    Enqueue(&UART1_TXq,pack_pop(),sizeof(uart_data_t));
+		     	}
+           //=====enable systick after receiving all pack=====
+
+             if (pack_rec_all)
+                {   
+                    SysTick->CTRL  =  SysTick->CTRL | 1UL;//enable systick
+                    GPIO_SetBits(GPIOD,LED5_PIN); 
+                    pack_rec_all = 0;
+                      /*if (!flag)  
+                      {  SysTick->CTRL = 0;//disable systick
+                         pack_rec_all = 0;
+                         GPIO_ResetBits(GPIOD,LED5_PIN);
+                      }*/
+  
+                }
+		  	 
 		}
 	}
 }	

@@ -29,10 +29,12 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
-//#include "main.h"
-
 
 __IO uint32_t TimingDelay=0;
+//=====external variables=====
+extern uart_data_t data_array[12000];
+extern uint16_t pins[];
+extern __IO uint16_t flag; 
 /** @addtogroup Template_Project
   * @{
   */
@@ -145,11 +147,38 @@ void PendSV_Handler(void)
 
 void SysTick_Handler(void)
 { 
- TimingDelay=!TimingDelay;
- if (TimingDelay==0)
-     GPIO_SetBits(GPIOD,GPIO_Pin_11);
+  uart_data_t data;
+  uint16_t pins_val;
+  uint8_t k;
+  TimingDelay++;
+  /*TimingDelay = ! TimingDelay;
+   if (TimingDelay) 
+    GPIO_SetBits(GPIOD,pins[9]);
    else
-     GPIO_ResetBits(GPIOD,GPIO_Pin_11);   
+    GPIO_ResetBits(GPIOD,pins[9]);*/
+
+
+  GPIO_SetBits(GPIOD,pins[9]);
+  //test if enter here
+  GPIO_SetBits(GPIOD,LED3_PIN);
+  
+  /*if ((data_array[flag].time) == TimingDelay) 
+  { 
+    data = data_array[flag];
+    pins_val = data.val;
+
+
+    for (k=1; k<16; k++)
+    {
+       if ((pins_val & ( 1 << k )) >> k)
+        GPIO_SetBits(GPIOD,pins[k]);
+        else GPIO_ResetBits(GPIOD,pins[k]); 
+    }
+
+    flag--;
+  }*/
+
+
 }
 
 /******************************************************************************/

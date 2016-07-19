@@ -19,4 +19,7 @@ stm32f4xx_it.o: stm32f4xx_it.c stm32f4xx_it.h \
  /home/elvis/stm32_discovery_arm_gcc/STM32F4-Discovery_FW_V1.1.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_can.h \
  /home/elvis/stm32_discovery_arm_gcc/STM32F4-Discovery_FW_V1.1.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_dac.h \
  /home/elvis/stm32_discovery_arm_gcc/STM32F4-Discovery_FW_V1.1.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_dcmi.h \
- /home/elvis/stm32_discovery_arm_gcc/STM32F4-Discovery_FW_V1.1.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_fsmc.h
+ /home/elvis/stm32_discovery_arm_gcc/STM32F4-Discovery_FW_V1.1.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_fsmc.h \
+ main.h \
+ /home/elvis/stm32_discovery_arm_gcc/STM32F4-Discovery_FW_V1.1.0/Utilities/STM32F4-Discovery/stm32f4_discovery.h \
+ uart.h

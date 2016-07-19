@@ -3,20 +3,10 @@
 #include "stm32f4_discovery.h"
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_rcc.h"
+#define ALL_PINS (GPIO_Pin_1 |GPIO_Pin_2 |GPIO_Pin_3 |GPIO_Pin_4 |GPIO_Pin_5 |GPIO_Pin_6 |GPIO_Pin_7 |GPIO_Pin_8 |GPIO_Pin_9 |GPIO_Pin_10 |GPIO_Pin_11 |GPIO_Pin_12 |GPIO_Pin_13 |GPIO_Pin_14 |GPIO_Pin_15 | LED4_PIN | LED5_PIN | LED3_PIN | LED6_PIN) // all pins
 
-//=====string handle functions declare=====
-int strlen(char *s);
-int strcmp(const char* s1, const char* s2);
-char *strcpy(char *dst, char *src);
-uint8_t *strcat(uint8_t *dest, const uint8_t *src);
 
 //=====fram and data structure=====
-
-
-static void pins_setup(void);
-extern __IO uint32_t TimingDelay;
-
-
 typedef struct __attribute__((packed)){
 	uint8_t type;
 	uint32_t time;
@@ -29,3 +19,17 @@ typedef struct __attribute__((packed)){
   uart_data_t data;
   uint8_t stop;
 } uart_frame_t;
+
+
+//=====string handle functions declare=====
+int strlen(char *s);
+int strcmp(const char* s1, const char* s2);
+char *strcpy(char *dst, char *src);
+uint8_t *strcat(uint8_t *dest, const uint8_t *src);
+//=====pin setup=====
+static void pins_setup(void);
+
+
+
+
+

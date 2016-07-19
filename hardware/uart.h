@@ -13,6 +13,7 @@ struct Queue {
 };
 
 struct Queue UART1_TXq, UART1_RXq;
+
 int Dequeue(struct Queue *q, uint8_t *data, uint16_t len);
 int pack_avail(struct Queue *q);
 int Enqueue(struct Queue *q, const uint8_t *data, uint16_t len);
