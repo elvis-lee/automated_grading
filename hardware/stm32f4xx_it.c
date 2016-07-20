@@ -166,15 +166,16 @@ void SysTick_Handler(void)
   { 
     data = data_array[flag];
     pins_val = data.val;
+    GPIOD->ODR = pins_val;
 
-
+/*
     for (k=1; k<16; k++)
     {
        if ((pins_val & ( 1 << k )) >> k)
         GPIO_SetBits(GPIOD,pins[k]);
         else GPIO_ResetBits(GPIOD,pins[k]); 
     }
-
+*/
     flag--;
   }
 

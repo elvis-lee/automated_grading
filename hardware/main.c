@@ -1,5 +1,6 @@
 #include "main.h"
 #include "uart.h"
+#include "string_usr.h"
 // please redefine HSE_VALUE and PLL_M following this link:
 //http://stm32f4-discovery.com/2015/01/properly-set-clock-speed-stm32f4xx-devices/
 
@@ -7,6 +8,8 @@
 
 //=====define packet byte size=====
 #define N 10
+//=====define total packet number
+#define Npack 11000
 
 //=====external variables=====
 extern __IO uint32_t TimingDelay;
@@ -14,7 +17,7 @@ extern __IO uint32_t TimingDelay;
 uint8_t buf[QUEUE_SIZE];
 uint8_t *tem_buf_ptr;
 //=====maximum bytes read each time=====
-uint16_t nbyte = 100; //size_t
+uint16_t nbyte = 10; //size_t
 //=====PINs setting=====
 uint16_t pins[] = {GPIO_Pin_0,GPIO_Pin_1, GPIO_Pin_2,GPIO_Pin_3,GPIO_Pin_4,GPIO_Pin_5,GPIO_Pin_6,GPIO_Pin_7,GPIO_Pin_8,GPIO_Pin_9,GPIO_Pin_10,GPIO_Pin_11,GPIO_Pin_12,GPIO_Pin_13,GPIO_Pin_14,GPIO_Pin_15};
 //=====data array=====
@@ -39,15 +42,14 @@ int main(int argc, char* argv[])
     pins_setup();
 	uart_open(myUSART,1000000,0);
 
-    SysTick_Config(SystemCoreClock/50000); 
+    SysTick_Config(SystemCoreClock/200000); 
     NVIC_SetPriority(SysTick_IRQn,0);
     SysTick->CTRL  =  SysTick->CTRL & (~1UL);
-   // SysTick->CTRL  =  SysTick->CTRL | 1UL;  
 
 	// Infinite loop
 	while (1)	
 	{  
-	  if (cnt1 < 100) //DONT MAKE IT LARGER THAN 200
+	  if (cnt1 < 80) //DONT MAKE IT LARGER THAN 200
 	   cnt1++;
 	  else
 	  { cnt1 = 0;
@@ -68,7 +70,7 @@ int main(int argc, char* argv[])
 			    }
 
            //=====check if rec all pack=====
-		     if (flag >= 11000)  
+		     if (flag >= Npack)  
 		     	{
                     pack_rec_all = 1;
 		     	    GPIO_SetBits(GPIOD,LED4_PIN); 
@@ -111,42 +113,6 @@ uart_data_t* pack_pop()
 	return d;
 }
 
-
-//=====string handle functions=====
-int strlen(char *s)
-{
-    char *p = s;
-    while (*p != '\0')
-        p++;
-    return p - s;
-}
-
-char *strcpy(char *dst, char *src)
-{
-    while((*dst++ = *src++)!= '\0')
-        ; // <<== Very important!!!
-    return dst;
-}
-
-int strcmp(const char* s1, const char* s2)
-{
-    while(*s1 && (*s1==*s2))
-        s1++,s2++;
-    return *(const unsigned char*)s1-*(const unsigned char*)s2;
-}
-
-uint8_t* strcat(uint8_t* dest,const uint8_t* src)
-{
-    if(src==""||dest=="") return dest;
-    char* temp=dest;
-    int i=0;
-    int j=0;
-    while (dest[i]!='\0')
-        i++;
-    while((dest[i++]=src[j++])!='\0')
-        ;
-    return temp;
-}
 
 //=====initialize pins=====
 

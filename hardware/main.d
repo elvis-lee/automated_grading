@@ -21,4 +21,4 @@ main.o: main.c main.h \
  /home/elvis/stm32_discovery_arm_gcc/STM32F4-Discovery_FW_V1.1.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_dcmi.h \
  /home/elvis/stm32_discovery_arm_gcc/STM32F4-Discovery_FW_V1.1.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_fsmc.h \
  /home/elvis/stm32_discovery_arm_gcc/STM32F4-Discovery_FW_V1.1.0/Utilities/STM32F4-Discovery/stm32f4_discovery.h \
- uart.h
+ uart.h string_usr.h

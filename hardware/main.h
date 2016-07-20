@@ -20,12 +20,6 @@ typedef struct __attribute__((packed)){
   uint8_t stop;
 } uart_frame_t;
 
-
-//=====string handle functions declare=====
-int strlen(char *s);
-int strcmp(const char* s1, const char* s2);
-char *strcpy(char *dst, char *src);
-uint8_t *strcat(uint8_t *dest, const uint8_t *src);
 //=====pin setup=====
 static void pins_setup(void);
 
