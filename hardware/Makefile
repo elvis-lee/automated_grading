@@ -2,7 +2,7 @@
 PROJ_NAME=UART1
 
 # object files
-OBJS=  $(STARTUP) main.o  stm32f4xx_gpio.o stm32f4xx_rcc.o stm32f4xx_usart.o misc.o uart.o stm32f4xx_it.o
+OBJS=  $(STARTUP) main.o  stm32f4xx_gpio.o stm32f4xx_rcc.o stm32f4xx_usart.o misc.o uart.o stm32f4xx_it.o 
 
 
 #############################

@@ -9,7 +9,7 @@
 //=====define packet byte size=====
 #define N 10
 //=====define total packet number
-#define Npack 11000
+#define Npack 6000
 
 //=====external variables=====
 extern __IO uint32_t TimingDelay;
@@ -17,21 +17,24 @@ extern __IO uint32_t TimingDelay;
 uint8_t buf[QUEUE_SIZE];
 uint8_t *tem_buf_ptr;
 //=====maximum bytes read each time=====
-uint16_t nbyte = 10; //size_t
+uint16_t nbyte = 10; //size_t 
 //=====PINs setting=====
 uint16_t pins[] = {GPIO_Pin_0,GPIO_Pin_1, GPIO_Pin_2,GPIO_Pin_3,GPIO_Pin_4,GPIO_Pin_5,GPIO_Pin_6,GPIO_Pin_7,GPIO_Pin_8,GPIO_Pin_9,GPIO_Pin_10,GPIO_Pin_11,GPIO_Pin_12,GPIO_Pin_13,GPIO_Pin_14,GPIO_Pin_15};
 //=====data array=====
-uart_data_t data_array[12000];
+uart_data_t data_array_out[6000];
+uart_data_t data_array_in[6000];
 //=====flag for data array=====
-__IO uint16_t flag= 0 ; 
+__IO uint16_t flag_out= 0 ; 
+__IO uint16_t flag_in= 0 ;
 //=====push and pop data=====
-void pack_push(uint8_t *addr);
-uart_data_t* pack_pop();
+void pack_push(uint8_t *addr, uint8_t IOtype);
+uart_data_t* pack_pop(uint8_t IOtype);
 //=====counter slows down buf read=====
 uint8_t cnt1 = 100;
 //=====temporary test variable=====
 uint8_t test1 = 0;
 uint8_t pack_rec_all = 0;
+uint8_t write_ready_flag =0;
 
 
 int main(int argc, char* argv[])
@@ -64,53 +67,87 @@ int main(int argc, char* argv[])
 			       ri = Dequeue(&UART1_RXq,buf,nbyte);
 			        for (tem_buf_ptr = buf; tem_buf_ptr - buf < ri ;tem_buf_ptr = tem_buf_ptr + sizeof(uart_frame_t))
 			         {	
-			   	       pack_push(tem_buf_ptr);
+			   	       pack_push(tem_buf_ptr+1,0);
 			         }
 			       ri = 0;
 			    }
 
            //=====check if rec all pack=====
-		     if (flag >= Npack)  
+		     if (flag_out >= Npack)  
 		     	{
                     pack_rec_all = 1;
-		     	    GPIO_SetBits(GPIOD,LED4_PIN); 
-                    //echo back the 11000 packet 
-		     	    Enqueue(&UART1_TXq,pack_pop(),sizeof(uart_data_t));
+		     	   // GPIO_SetBits(GPIOD,LED4_PIN); 
+                    //echo back the last packet 
+		     	    Enqueue(&UART1_TXq,pack_pop(0),sizeof(uart_data_t));
 		     	}
            //=====enable systick after receiving all pack=====
 
              if (pack_rec_all)
                 {   pack_rec_all = 0;
                     SysTick->CTRL  =  SysTick->CTRL | 1UL;//enable systick
-                    GPIO_SetBits(GPIOD,LED5_PIN); 
-                   
-                      if (!flag)  
-                      {  SysTick->CTRL = 0;//disable systick
-                         GPIO_ResetBits(GPIOD,LED5_PIN);
-                      }
-  
+                    //GPIO_SetBits(GPIOD,LED5_PIN); 
                 }
-		  	 
 		}
+
+             if (!flag_out)  
+                {     SysTick->CTRL  =  SysTick->CTRL & (~1UL);
+                      GPIO_ResetBits(GPIOD,LED6_PIN);
+                }	  
+/*
+             if (flag_in ==5999) 
+             	{
+             		write_ready_flag = 1;
+             	}
+
+             if (write_ready_flag && flag_in > 0)
+             	 if (QueueEmpty(&UART1_TXq))  //need improvement later
+             		{
+             			Enqueue(&UART1_TXq,pack_pop(1),sizeof(uart_data_t));
+             		}*/
+             	
 	}
 }	
 
 //=====packet push=====
-void pack_push(uint8_t *addr)
+void pack_push(uint8_t *addr,uint8_t IOtype)
 {   uart_frame_t *frame;
-	flag++;
-	frame = ((uart_frame_t*)addr);
-	data_array[flag] = (*frame).data;
+
+
+
+	if (!IOtype)
+	{
+		flag_out++;
+		//frame = ((uart_frame_t*)addr);
+		data_array_out[flag_out] = *(uart_data_t*)addr;
+	}
+
+	if (IOtype == 1)
+	{
+		flag_in++;
+		data_array_in[flag_in] = *((uart_data_t*)addr);
+	}	
+	
 	
 }
 
 //=====packet pop=====
-uart_data_t* pack_pop()
+uart_data_t* pack_pop(uint8_t IOtype)
 {
-	uart_data_t* d;
-    d = &(data_array[flag]);
-	flag--;
-	return d;
+	if (!IOtype)
+	{
+		uart_data_t* d;
+    	d = &(data_array_out[flag_out]);
+		flag_out--;
+		return d;
+	}
+
+	if (IOtype == 1)
+	{
+		uart_data_t* d;
+    	d = &(data_array_in[flag_in]);
+		flag_in--;
+		return d;
+	}	
 }
 
 
@@ -126,6 +163,22 @@ static void pins_setup(void)
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
     GPIO_Init(GPIOD, &GPIO_InitStructure);
+
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+    GPIO_InitStructure.GPIO_Pin   = ALL_PINS;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+    GPIO_InitStructure.GPIO_Pin   = ALL_PINS;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IN;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+    GPIO_Init(GPIOC, &GPIO_InitStructure);
 }
 
 

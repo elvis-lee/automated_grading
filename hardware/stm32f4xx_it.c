@@ -32,9 +32,11 @@
 
 __IO uint32_t TimingDelay=0;
 //=====external variables=====
-extern uart_data_t data_array[12000];
+extern uart_data_t data_array_out[6000];
+extern uart_data_t data_array_in[6000];
 extern uint16_t pins[];
-extern __IO uint16_t flag; 
+extern __IO uint16_t flag_out; 
+extern __IO uint16_t flag_in;
 /** @addtogroup Template_Project
   * @{
   */
@@ -146,40 +148,29 @@ void PendSV_Handler(void)
 
 
 void SysTick_Handler(void)
-{ 
-  uart_data_t data;
+{
   uint16_t pins_val;
-  uint8_t k;
+  extern void pack_push(uint8_t *,uint8_t);
+  uart_data_t data_temp;
+
   TimingDelay++;
-  /*TimingDelay = ! TimingDelay;
-   if (TimingDelay) 
-    GPIO_SetBits(GPIOD,pins[9]);
-   else
-    GPIO_ResetBits(GPIOD,pins[9]);*/
 
-
-  GPIO_SetBits(GPIOD,pins[9]);
   //test if enter here
-  GPIO_SetBits(GPIOD,LED3_PIN);
+
   
-  if ((data_array[flag].time) == TimingDelay) 
-  { 
-    data = data_array[flag];
-    pins_val = data.val;
-    GPIOD->ODR = pins_val;
-
-/*
-    for (k=1; k<16; k++)
-    {
-       if ((pins_val & ( 1 << k )) >> k)
-        GPIO_SetBits(GPIOD,pins[k]);
-        else GPIO_ResetBits(GPIOD,pins[k]); 
-    }
-*/
-    flag--;
+  if ((data_array_out[flag_out].time) == TimingDelay) 
+  {   GPIO_SetBits(GPIOD,LED6_PIN);
+    GPIOA->ODR = data_array_out[flag_out].val;
+    flag_out--;
   }
-
-
+  
+  
+  data_temp.val = GPIOC -> IDR;
+  data_temp.time = TimingDelay;
+  data_temp.type = 'A';
+  data_temp.checksum = 'C';
+  pack_push((uint8_t*)(&data_temp),1); 
+  
 }
 
 /******************************************************************************/

@@ -5,6 +5,8 @@ import timeit
 import string
 import random
 import time
+import ctypes
+import struct
 
 BAUDRATE=1000000
 
@@ -21,9 +23,25 @@ ser.stopbits=serial.STOPBITS_ONE
 ser.timeout=None
 ser.writeTimeout=None
 ser.open()  
-def com1():   
- for i in range(1,11001):      #Sending out 10MB in total
-  data = id_generator(10,) 
+def com1():
+ tvalue = 110050 
+ for i in range(1,6001):  
+  tvalue = tvalue - 1;   
+  tsend =  struct.pack('I',(ctypes.c_uint32(tvalue).value))
+  if (i%2):
+   v = b'\xFF\x80'
+  else:
+   v = b'\x00\x00'
+  data = 'ST'
+  print data
+  ser.write(data)
+  data = tsend
+  print data
+  ser.write(data)
+  data = v
+  print data
+  ser.write(data)
+  data = 'CE'
   print data
   ser.write(data)
   print "Time=%d Sent=%d packets" %(i,i) 
