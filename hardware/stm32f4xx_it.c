@@ -150,7 +150,7 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   uint16_t pins_val;
-  extern void pack_push(uint8_t *,uint8_t);
+  //extern void pack_push(uint8_t *,uint8_t);
   uart_data_t data_temp;
 
   TimingDelay++;
@@ -159,17 +159,18 @@ void SysTick_Handler(void)
 
   
   if ((data_array_out[flag_out].time) == TimingDelay) 
-  {   GPIO_SetBits(GPIOD,LED6_PIN);
-    GPIOA->ODR = data_array_out[flag_out].val;
+  { 
+    GPIO_SetBits(GPIOD,LED6_PIN);
+    GPIOE->ODR = data_array_out[flag_out].val;
     flag_out--;
   }
   
   
-  data_temp.val = GPIOC -> IDR;
-  data_temp.time = TimingDelay;
-  data_temp.type = 'A';
-  data_temp.checksum = 'C';
-  pack_push((uint8_t*)(&data_temp),1); 
+  //data_temp.val = GPIOC -> IDR;
+  //data_temp.time = TimingDelay;
+  //data_temp.type = 'A';
+  //data_temp.checksum = 'C';
+ // pack_push((uint8_t*)(&data_temp),1); 
   
 }
 

@@ -30,7 +30,7 @@ __IO uint16_t flag_in= 0 ;
 void pack_push(uint8_t *addr, uint8_t IOtype);
 uart_data_t* pack_pop(uint8_t IOtype);
 //=====counter slows down buf read=====
-uint8_t cnt1 = 100;
+uint8_t cnt1 = 0;
 //=====temporary test variable=====
 uint8_t test1 = 0;
 uint8_t pack_rec_all = 0;
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 
 		ri = pack_avail(&UART1_RXq);
 		     if (ri >= nbyte) 
-			    {   
+			    {    
 			       ri = Dequeue(&UART1_RXq,buf,nbyte);
 			        for (tem_buf_ptr = buf; tem_buf_ptr - buf < ri ;tem_buf_ptr = tem_buf_ptr + sizeof(uart_frame_t))
 			         {	
@@ -73,19 +73,19 @@ int main(int argc, char* argv[])
 			    }
 
            //=====check if rec all pack=====
-		     if (flag_out >= Npack)  
+		     if (flag_out == Npack)  
 		     	{
                     pack_rec_all = 1;
-		     	   // GPIO_SetBits(GPIOD,LED4_PIN); 
+		     	    GPIO_SetBits(GPIOD,LED4_PIN);
                     //echo back the last packet 
-		     	    Enqueue(&UART1_TXq,pack_pop(0),sizeof(uart_data_t));
+		     	    Enqueue(&UART1_TXq,(uint8_t*)pack_pop(0),sizeof(uart_data_t));
 		     	}
            //=====enable systick after receiving all pack=====
 
              if (pack_rec_all)
                 {   pack_rec_all = 0;
                     SysTick->CTRL  =  SysTick->CTRL | 1UL;//enable systick
-                    //GPIO_SetBits(GPIOD,LED5_PIN); 
+                    GPIO_SetBits(GPIOD,LED5_PIN); 
                 }
 		}
 
@@ -110,14 +110,10 @@ int main(int argc, char* argv[])
 
 //=====packet push=====
 void pack_push(uint8_t *addr,uint8_t IOtype)
-{   uart_frame_t *frame;
-
-
-
+{   
 	if (!IOtype)
 	{
 		flag_out++;
-		//frame = ((uart_frame_t*)addr);
 		data_array_out[flag_out] = *(uart_data_t*)addr;
 	}
 
@@ -155,7 +151,8 @@ uart_data_t* pack_pop(uint8_t IOtype)
 
 static void pins_setup(void)
 {
-    GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitTypeDef GPIO_InitStructure;
+	
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
     GPIO_InitStructure.GPIO_Pin   = ALL_PINS;
     GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
@@ -164,21 +161,21 @@ static void pins_setup(void)
     GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
     GPIO_Init(GPIOD, &GPIO_InitStructure);
 
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+    /*RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
     GPIO_InitStructure.GPIO_Pin   = ALL_PINS;
     GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_Init(GPIOB, &GPIO_InitStructure);*/
 
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
     GPIO_InitStructure.GPIO_Pin   = ALL_PINS;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IN;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOC, &GPIO_InitStructure);
+    GPIO_Init(GPIOE, &GPIO_InitStructure);
 }
 
 

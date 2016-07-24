@@ -29,7 +29,7 @@ def com1():
   tvalue = tvalue - 1;   
   tsend =  struct.pack('I',(ctypes.c_uint32(tvalue).value))
   if (i%2):
-   v = b'\xFF\x80'
+   v = b'\xFF\xFF'
   else:
    v = b'\x00\x00'
   data = 'ST'
