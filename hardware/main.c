@@ -93,17 +93,18 @@ int main(int argc, char* argv[])
                 {     SysTick->CTRL  =  SysTick->CTRL & (~1UL);
                       GPIO_ResetBits(GPIOD,LED6_PIN);
                 }	  
-/*
+
              if (flag_in ==5999) 
              	{
              		write_ready_flag = 1;
+             		GPIO_SetBits(GPIOD,LED3_PIN);
              	}
 
              if (write_ready_flag && flag_in > 0)
              	 if (QueueEmpty(&UART1_TXq))  //need improvement later
              		{
-             			Enqueue(&UART1_TXq,pack_pop(1),sizeof(uart_data_t));
-             		}*/
+             			Enqueue(&UART1_TXq,(uint8_t*)pack_pop(1),sizeof(uart_data_t));
+             		}
              	
 	}
 }	
@@ -161,13 +162,13 @@ static void pins_setup(void)
     GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
     GPIO_Init(GPIOD, &GPIO_InitStructure);
 
-    /*RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
     GPIO_InitStructure.GPIO_Pin   = ALL_PINS;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IN;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOB, &GPIO_InitStructure);*/
+    GPIO_Init(GPIOC, &GPIO_InitStructure);
 
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
     GPIO_InitStructure.GPIO_Pin   = ALL_PINS;

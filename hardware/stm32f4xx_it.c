@@ -32,8 +32,8 @@
 
 __IO uint32_t TimingDelay=0;
 //=====external variables=====
-extern uart_data_t data_array_out[6000];
-extern uart_data_t data_array_in[6000];
+extern __IO uart_data_t data_array_out[];
+extern __IO uart_data_t data_array_in[];
 extern uint16_t pins[];
 extern __IO uint16_t flag_out; 
 extern __IO uint16_t flag_in;
@@ -156,22 +156,25 @@ void SysTick_Handler(void)
   TimingDelay++;
 
   //test if enter here
-
+  GPIO_SetBits(GPIOD,LED6_PIN);
   
   if ((data_array_out[flag_out].time) == TimingDelay) 
   { 
-    GPIO_SetBits(GPIOD,LED6_PIN);
+    
     GPIOE->ODR = data_array_out[flag_out].val;
     flag_out--;
-  }
   
   
-  //data_temp.val = GPIOC -> IDR;
-  //data_temp.time = TimingDelay;
-  //data_temp.type = 'A';
-  //data_temp.checksum = 'C';
+  
+  data_temp.val = GPIOC -> IDR;
+  data_temp.time = TimingDelay;
+  data_temp.type = 'A';
+  data_temp.checksum = 'C';
  // pack_push((uint8_t*)(&data_temp),1); 
-  
+  flag_in++;
+  data_array_in[flag_in] = data_temp;
+
+  }
 }
 
 /******************************************************************************/

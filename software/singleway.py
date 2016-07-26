@@ -29,7 +29,7 @@ def com1():
   tvalue = tvalue - 1;   
   tsend =  struct.pack('I',(ctypes.c_uint32(tvalue).value))
   if (i%2):
-   v = b'\xFF\xFF'
+   v = b'\x00\xFF'
   else:
    v = b'\x00\x00'
   data = 'ST'
@@ -47,6 +47,14 @@ def com1():
   print "Time=%d Sent=%d packets" %(i,i) 
  received = ser.read(8)
  print received 
+
+ for i in range(1,6000):
+  print i
+  received = ser.read(1)
+  received = ser.read(4)
+  received = ser.read(2)
+  print(' '.join(format(ord(x), 'b') for x in received))
+  received =ser.read(1)
     
  return
 
